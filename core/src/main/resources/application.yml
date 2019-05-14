@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: pathology
+#  messages:
+#    basename: i18n/messages
+#  datasource:
+#    driver-class-name: com.mysql.jdbc.Driver
+#    url: jdbc:mysql://localhost/pathology?autoReconnect=true&amp;useUnicode=true&amp;characterE ncoding=utf-8
+#    username: pathology
+#    password: pathology
+#  jpa:
+#    show-sql: false
+#    database: mysql
+#  freemarker:
+#    cache: false
+#    charset: UTF-8
+#    check-template-location: true
+#    content-type: text/html
+#    expose-request-attributes: true
+#    expose-session-attributes: true
+#    request-context-attribute: requset
+#    suffix: .ftl
+#develop devSingle-docker devSentinelCluster-dev devSentinelCluster-mac onlineSingle-docker onlineJedisCluster thoslide
+  profiles:
+    active: onlineSingle-docker
+  servlet:
+    multipart:
+      max-file-size: 4096MB
+      max-request-size: 4096MB
+  mvc:
+    favicon:
+      enabled: false
+  jackson:
+    serialization:
+      write-dates-as-timestamps: true
+server:
+  compression:
+    enabled: true
+    mime-types: text/html,text/css,application/json,application/javas3tg
+
+  display-name: PathologyApplication
+  session:
+    timeout: 86400
+  connection-timeout: 30000
+  tomcat:
+      max-threads: 1900
+      max-connections: 20000
+      accept-count: 1000 #服务端接受socket缓存队列大小，ServerProperties类中
+      acceptor-count: 2 #接受socket请求的线程数，自定义的一个属性
+
+
+flyway:
+  enabled: false
+
+
+
+#logging:
+#  path: /home/pathology/logs
+
+#    /Users/chenlinsong/physicso/labeltool_backend/build/libs/labeltool_backend-0.0.1-SNAPSHOT.jar

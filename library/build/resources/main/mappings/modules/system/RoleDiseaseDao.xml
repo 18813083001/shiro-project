@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thorough.library.system.model.dao.RoleDiseaseDao">
+
+    <sql id="roleJoin">
+        <!--select distinct d.* from pathology_disease d inner join pathology_role_disease r on d.id = r.disease_id-->
+        select distinct
+        d.id,
+        d.parent_id,
+        d.parent_ids,
+        d.name,
+        d.rgb,
+        d.category,
+        d.code,
+        d.ai_value,
+        d.sort,
+        d.anchor
+        from pathology_disease d
+        inner join pathology_role_disease r on r.disease_id = d.id
+        inner join sys_role sr on r.role_id = sr.id and sr.del_flag='0' and useable='1'
+    </sql>
+
+    <sql id="column">
+        d.id,
+        d.parent_id,
+        d.parent_ids,
+        d.name,
+        d.rgb,
+        d.category,
+        d.code,
+        d.ai_value,
+        d.sort,
+        d.anchor
+    </sql>
+
+    <!-- 该函数跟角色无关,根据子idList和分类获取某个上级的ID、名称、编码、分类，同时还返回子id-->
+    <select id="getParentCodeByChildIdList" resultType="com.thorough.library.system.model.vo.ParentDiseaseInfoVo" statementType="CALLABLE">
+        call getParentCodeByChildIdList(#{childIdList},#{category})
+    </select>
+
+    <select id="getDiseaseChildIdsByParentId" resultType="java.lang.String" statementType="CALLABLE">
+        call showChildLst(#{parentId})
+    </select>
+
+    <select id="getDirectChildsByParentIdAndRoleId" resultType="com.thorough.library.system.model.entity.Disease" parameterType="map">
+        <include refid="roleJoin"/>
+        where d.del_flag = '0' and d.parent_id = #{parentId}
+        <choose>
+            <when test="roleIds != null  and roleIds.size > 0">
+                and r.role_id in
+                <foreach close=")" collection="roleIds" item="listItem" open="(" separator=",">
+                    #{listItem}
+                </foreach>
+            </when>
+            <otherwise>
+                and r.role_id in ('')
+            </otherwise>
+        </choose>
+        order by sort asc
+    </select>
+
+    <select id="getChildsFromDiseaseIdListAndCategoryAndRole" resultType="com.thorough.library.system.model.entity.Disease" parameterType="map">
+        <include refid="roleJoin"/>
+        where d.del_flag = '0'
+        <if test="category !=null and category !=''">
+        and d.category = #{category}
+        </if>
+        <choose>
+        <when test="diseaseIds != null and diseaseIds.size > 0">
+            and d.id in
+            <foreach close=")" collection="diseaseIds" item="listItem" open="(" separator=",">
+                #{listItem}
+            </foreach>
+        </when>
+            <otherwise>
+                and d.id in ('')
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="roleIds != null and roleIds.size > 0">
+                and  r.role_id in
+                <foreach close=")" collection="roleIds" item="listItem" open="(" separator=",">
+                    #{listItem}
+                </foreach>
+            </when>
+            <otherwise>
+                and  r.role_id in ('')
+            </otherwise>
+        </choose>
+        order by sort asc
+    </select>
+
+    <select id="getChildsFromDiseaseIdListAndCategory" resultType="com.thorough.library.system.model.entity.Disease" parameterType="map">
+        select distinct
+        <include refid="column"/>
+        from pathology_disease d
+        where d.del_flag = '0'
+        <if test="category !=null and category !=''">
+            and d.category = #{category}
+        </if>
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and d.id in
+                <foreach close=")" collection="diseaseIds" item="listItem" open="(" separator=",">
+                    #{listItem}
+                </foreach>
+            </when>
+            <otherwise>
+                and d.id in ('')
+            </otherwise>
+        </choose>
+        order by sort asc
+    </select>
+
+
+    <select id="getDiseaseIdsByRoleIds"  resultType="java.lang.String" parameterType="java.util.List">
+        select distinct disease_id from pathology_role_disease  r
+        inner join sys_role sr on r.role_id = sr.id and sr.del_flag='0' and useable='1'
+        where role_id in
+        <choose>
+            <when test="roleIds != null and roleIds.size > 0">
+                <foreach collection="roleIds" index="index" item="listItem" open="(" separator="," close=")">
+                    #{listItem}
+                </foreach>
+            </when>
+            <otherwise>
+                ('')
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getDiseaseByRoleIds"  resultType="com.thorough.library.system.model.entity.Disease" parameterType="java.util.List">
+        <include refid="roleJoin"/>
+        where d.del_flag = '0'
+        <choose>
+            <when test="roleIds != null  and roleIds.size > 0">
+                and r.role_id in
+                <foreach close=")" collection="roleIds" item="listItem" open="(" separator=",">
+                    #{listItem}
+                </foreach>
+            </when>
+            <otherwise>
+                and r.role_id in ('')
+            </otherwise>
+        </choose>
+        order by sort asc
+    </select>
+
+    <select id="getDiseasesByRoleIds"  resultType="com.thorough.library.system.model.entity.Disease" parameterType="map">
+        <!--select d.id,d.parent_id,d.parent_ids,d.name,d.rgb,d.category,d.code,d.sort from pathology_disease d inner join pathology_role_disease r on r.disease_id = d.id-->
+        <include refid="roleJoin"/>
+        where d.del_flag = '0'
+        <choose>
+            <when test="roleIds != null  and roleIds.size >0">
+                and r.role_id in
+                <foreach close=")" collection="roleIds" item="listItem" open="(" separator=",">
+                    #{listItem}
+                </foreach>
+            </when>
+            <otherwise>
+                and r.role_id in ('')
+            </otherwise>
+        </choose>
+        order by sort asc
+    </select>
+
+    <insert id="insertRoleDisease" parameterType="map">
+        INSERT INTO pathology_role_disease(role_id, disease_id)
+        <foreach collection="diseaseList" item="disease" separator=" union ">
+            SELECT #{roleId}, #{disease}
+                FROM dual
+        </foreach>
+    </insert>
+
+    <select id="getDiseaseIdListByUserIdList" resultType="java.lang.String">
+        select DISTINCT disease.id
+        from sys_user_role urole
+        inner join pathology_role_disease drole on urole.role_id=drole.role_id
+        inner join pathology_disease disease on disease.id = drole.disease_id
+        and disease.del_flag = '0'
+        <choose>
+            <when test="userIds != null and userIds.size > 0">
+                and urole.user_id in
+                <foreach close=")" collection="userIds" item="userId" open="(" separator=",">
+                    #{userId}
+                </foreach>
+            </when>
+            <otherwise>
+                and urole.user_id in ('')
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="parentId != null and parentId!='' and parentId !='0'.toString()">
+                and disease.parent_ids like '%,${parentId},%'
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+        <if test="category !=null and category !=''">
+            and disease.category= #{category}
+        </if>
+    </select>
+
+    <delete id="deleteRoleDisease">
+        DELETE FROM pathology_role_disease WHERE role_id = #{roleId}
+    </delete>
+
+</mapper>

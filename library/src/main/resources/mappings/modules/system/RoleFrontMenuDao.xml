@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thorough.library.system.model.dao.RoleFrontMenuDao">
+
+    <sql id="frontMenuColumn">
+        select distinct
+        m.id,
+        m.parent_id,
+        m.parent_ids,
+        m.name,
+        m.name,
+        m.sort,
+        m.permission,
+        m.code
+    </sql>
+
+    <select id="getFrontMenuIdsByRoleIds"  resultType="com.thorough.library.system.model.entity.FrontMenu" parameterType="java.util.List">
+        <include refid="frontMenuColumn"/> from sys_role_front_menu  r
+        inner join sys_role sr on r.role_id = sr.id and sr.del_flag='0' and useable='1'
+        inner join sys_front_menu m on r.front_menu_id = m.id and m.del_flag='0' and m.is_show='1'
+        where role_id in
+        <choose>
+            <when test="list != null and list.size > 0">
+                <foreach collection="list" index="index" item="listItem" open="(" separator="," close=")">
+                    #{listItem}
+                </foreach>
+            </when>
+            <otherwise>
+                ('')
+            </otherwise>
+        </choose>
+    </select>
+
+
+    <insert id="insertRoleFrontMenu" parameterType="com.thorough.library.system.model.entity.Role">
+        INSERT INTO sys_role_front_menu(role_id, front_menu_id)
+        <foreach collection="frontMenuIdList" item="frontMenuId" separator=" union all ">
+            SELECT #{id}, #{frontMenuId}
+                FROM dual
+        </foreach>
+    </insert>
+
+    <delete id="deleteRoleFrontMenu" parameterType="com.thorough.library.system.model.entity.Role">
+        DELETE FROM sys_role_front_menu WHERE role_id = #{id}
+    </delete>
+
+</mapper>

@@ -1,0 +1,775 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thorough.core.modules.pathology.model.dao.Statistics2Dao">
+
+    <sql id="timeSelect">
+        <choose>
+            <when test="createDate!=null and createEndDate!=null">
+                user.create_date between #{createDate} and #{createEndDate} and
+            </when>
+            <otherwise>
+                <if test="createDate!=null">
+                    user.create_date <![CDATA[ >= ]]> #{createDate} and
+                </if>
+                <if test="createEndDate!=null">
+                    user.create_date <![CDATA[ <= ]]> #{createEndDate} and
+                </if>
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="submitTime">
+        <choose>
+            <when test="createDate!=null and createEndDate!=null">
+                user.submit_date between #{createDate} and #{createEndDate} and
+            </when>
+            <otherwise>
+                <if test="createDate!=null">
+                    user.submit_date <![CDATA[ >= ]]> #{createDate} and
+                </if>
+                <if test="createEndDate!=null">
+                    user.submit_date <![CDATA[ <= ]]> #{createEndDate} and
+                </if>
+            </otherwise>
+        </choose>
+    </sql>
+
+    <!--查询医院切片总数和未分配数-->
+    <select id="getImageTotalAndUnAllocationImageTotal" resultType="com.thorough.core.modules.pathology.model.vo.StatisticsVo">
+        select
+        <choose>
+            <when test="hospitalId != null and hospitalId !=''">
+                (select name from sys_office where id = #{hospitalId}) as userName,
+            </when>
+            <otherwise>
+                '所有医院' as userName,
+            </otherwise>
+        </choose>
+
+        a1.* from
+        (select * from
+        (
+        <!--医院切片总数-->
+        select COUNT(DISTINCT id) as total from pathology_image image
+        where image.del_flag=0
+        <if test="sourceHospitalIds !=null and sourceHospitalIds.size() > 0">
+            and image.hospital_id in
+            <foreach close=")" collection="sourceHospitalIds" item="listItem" open="(" separator=",">
+                #{listItem}
+            </foreach>
+        </if>
+        <if test="diseaseIdList!=null">
+            and disease_id in
+            <choose>
+                <when test="diseaseIdList.size()> 0">
+                    <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        )t9  left join
+        <!--未分配数-->
+        (select COUNT(DISTINCT id) as unAllocated from pathology_image image where
+        image.del_flag=0
+        and (allocation=0 or allocation=2)
+        <if test="sourceHospitalIds !=null and sourceHospitalIds.size() > 0">
+            and image.hospital_id in
+            <foreach close=")" collection="sourceHospitalIds" item="listItem" open="(" separator=",">
+                #{listItem}
+            </foreach>
+        </if>
+        <if test="diseaseIdList!=null">
+            and disease_id in
+            <choose>
+                <when test="diseaseIdList.size()> 0">
+                    <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        )t10  on 1=1 left join
+        <!--一审分配总数-->
+        (select COUNT(DISTINCT image.id) as totalAllocated10 from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <if test="sourceHospitalIds !=null and sourceHospitalIds.size() > 0">
+            and image.hospital_id in
+            <foreach close=")" collection="sourceHospitalIds" item="listItem" open="(" separator=",">
+                #{listItem}
+            </foreach>
+        </if>
+        <if test="diseaseIdList!=null">
+            and disease_id in
+            <choose>
+                <when test="diseaseIdList.size()> 0">
+                    <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        <if test="userIdList!=null">
+            and user.user_id in
+            <choose>
+                <when test="userIdList.size()> 0">
+                    <foreach close=")" collection="userIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        where user.review_stage=10 and image.del_flag=0) t1 on 1=1 left join
+        <!--一审完成切片总数-->
+        (select COUNT(DISTINCT image.id) as totalSubmit10 from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <if test="sourceHospitalIds !=null and sourceHospitalIds.size() > 0">
+            and image.hospital_id in
+            <foreach close=")" collection="sourceHospitalIds" item="listItem" open="(" separator=",">
+                #{listItem}
+            </foreach>
+        </if>
+        <if test="diseaseIdList!=null">
+            and disease_id in
+            <choose>
+                <when test="diseaseIdList.size()> 0">
+                    <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        <if test="userIdList!=null">
+            and user.user_id in
+            <choose>
+                <when test="userIdList.size()> 0">
+                    <foreach close=")" collection="userIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        where user.review_stage=10 and user.ownership=0 and image.del_flag=0)t2 on 1=1  left join
+        <!--一审未完成切片总数-->
+        (select COUNT(DISTINCT image.id) as totalUnSubmit10 from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <if test="sourceHospitalIds !=null and sourceHospitalIds.size() > 0">
+            and image.hospital_id in
+            <foreach close=")" collection="sourceHospitalIds" item="listItem" open="(" separator=",">
+                #{listItem}
+            </foreach>
+        </if>
+        <if test="diseaseIdList!=null">
+            and disease_id in
+            <choose>
+                <when test="diseaseIdList.size()> 0">
+                    <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        <if test="userIdList!=null">
+            and user.user_id in
+            <choose>
+                <when test="userIdList.size()> 0">
+                    <foreach close=")" collection="userIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        where user.review_stage=10 and user.ownership=1 and image.del_flag=0)t3 on 1=1 left join
+        <!--二审分配总数-->
+        (select COUNT(DISTINCT image.id) as totalAllocated11 from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <if test="sourceHospitalIds !=null and sourceHospitalIds.size() > 0">
+            and image.hospital_id in
+            <foreach close=")" collection="sourceHospitalIds" item="listItem" open="(" separator=",">
+                #{listItem}
+            </foreach>
+        </if>
+        <if test="diseaseIdList!=null">
+            and disease_id in
+            <choose>
+                <when test="diseaseIdList.size()> 0">
+                    <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        <if test="userIdList!=null">
+            and user.user_id in
+            <choose>
+                <when test="userIdList.size()> 0">
+                    <foreach close=")" collection="userIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        where user.review_stage=11 and image.del_flag=0)t4 on 1=1 left join
+        <!--二审完成切片总数-->
+        (select COUNT(id) as totalSubmit11 from ( select DISTINCT image.id from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <if test="sourceHospitalIds !=null and sourceHospitalIds.size() > 0">
+            and image.hospital_id in
+            <foreach close=")" collection="sourceHospitalIds" item="listItem" open="(" separator=",">
+                #{listItem}
+            </foreach>
+        </if>
+        <if test="diseaseIdList!=null">
+            and disease_id in
+            <choose>
+                <when test="diseaseIdList.size()> 0">
+                    <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        <if test="userIdList!=null">
+            and user.user_id in
+            <choose>
+                <when test="userIdList.size()> 0">
+                    <foreach close=")" collection="userIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        where user.review_stage=11 and user.ownership=0 and image.del_flag=0) t where
+        <!--去除二审提交给主任，但主任还没有提交的数据-->
+        not EXISTS(
+        select image.id from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <if test="sourceHospitalIds !=null and sourceHospitalIds.size() > 0">
+            and image.hospital_id in
+            <foreach close=")" collection="sourceHospitalIds" item="listItem" open="(" separator=",">
+                #{listItem}
+            </foreach>
+        </if>
+        <if test="diseaseIdList!=null">
+            and disease_id in
+            <choose>
+                <when test="diseaseIdList.size()> 0">
+                    <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        <if test="userIdList!=null">
+            and user.user_id in
+            <choose>
+                <when test="userIdList.size()> 0">
+                    <foreach close=")" collection="userIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        where user.review_stage=11 and user.ownership=1 and image.del_flag=0 and image.id= t.id
+        )
+        )t5 on 1=1 left join
+        <!--二审未完成切片总数-->
+        (select COUNT(DISTINCT image.id) as totalUnSubmit11 from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <if test="sourceHospitalIds !=null and sourceHospitalIds.size() > 0">
+            and image.hospital_id in
+            <foreach close=")" collection="sourceHospitalIds" item="listItem" open="(" separator=",">
+                #{listItem}
+            </foreach>
+        </if>
+        <if test="diseaseIdList!=null">
+            and disease_id in
+            <choose>
+                <when test="diseaseIdList.size()> 0">
+                    <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        <if test="userIdList!=null">
+            and user.user_id in
+            <choose>
+                <when test="userIdList.size()> 0">
+                    <foreach close=")" collection="userIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        where user.review_stage=11 and user.ownership=1 and image.del_flag=0)t6 on 1=1 left join
+        <!--昨天完成一审切片总数-->
+        (select COUNT(DISTINCT image.id) as yesterdaySubmit10 from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <if test="sourceHospitalIds !=null and sourceHospitalIds.size() > 0">
+            and image.hospital_id in
+            <foreach close=")" collection="sourceHospitalIds" item="listItem" open="(" separator=",">
+                #{listItem}
+            </foreach>
+        </if>
+        <if test="diseaseIdList!=null">
+            and disease_id in
+            <choose>
+                <when test="diseaseIdList.size()> 0">
+                    <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        <if test="userIdList!=null">
+            and user.user_id in
+            <choose>
+                <when test="userIdList.size()> 0">
+                    <foreach close=")" collection="userIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        where user.review_stage=10 and user.ownership=0 and user.update_date BETWEEN   date_sub(DATE_FORMAT(NOW(),'%Y-%m-%d 17:00:00'),interval 1 day) and   date_sub(DATE_FORMAT(NOW(),'%Y-%m-%d 17:00:00'),interval 0 day) and user.update_by!='OverdueThread' and image.del_flag=0)t7 on 1=1 left join
+        <!--昨天完成二审切片总数-->
+        (select COUNT(DISTINCT image.id) as yesterdaySubmit11 from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <if test="sourceHospitalIds !=null and sourceHospitalIds.size() > 0">
+            and image.hospital_id in
+            <foreach close=")" collection="sourceHospitalIds" item="listItem" open="(" separator=",">
+                #{listItem}
+            </foreach>
+        </if>
+        <if test="diseaseIdList!=null">
+            and disease_id in
+            <choose>
+                <when test="diseaseIdList.size()> 0">
+                    <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        <if test="userIdList!=null">
+            and user.user_id in
+            <choose>
+                <when test="userIdList.size()> 0">
+                    <foreach close=")" collection="userIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        where user.review_stage=11 and user.ownership=0 and user.update_date BETWEEN   date_sub(DATE_FORMAT(NOW(),'%Y-%m-%d 17:00:00'),interval 1 day) and   date_sub(DATE_FORMAT(NOW(),'%Y-%m-%d 17:00:00'),interval 0 day) and user.update_by!='OverdueThread' and image.del_flag=0)t8 on 1=1
+        )a1
+    </select>
+
+
+
+    <!-- ##################################### -->
+
+
+    <!--查询医生分配切片总数和未分配数-->
+    <sql id="selectOneDoctor">
+        select  (SELECT name from sys_user where id=#{userId}) as userName ,#{userId} as userId,a1.* from
+        ( select *  from
+        (select '0' as total )t9  left join
+        (select '0' as unAllocated )t10  on 1=1 left join
+        <!--一审分配切片总数-->
+        (select COUNT(DISTINCT image.id) as totalAllocated10 from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <if test="sourceHospitalIds !=null and sourceHospitalIds.size() > 0">
+            and image.hospital_id in
+            <foreach close=")" collection="sourceHospitalIds" item="listItem" open="(" separator=",">
+                #{listItem}
+            </foreach>
+        </if>
+        <if test="diseaseIdList!=null">
+            and disease_id in
+            <choose>
+                <when test="diseaseIdList.size()> 0">
+                    <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        and image.del_flag=0
+        where
+        <include refid="timeSelect"/>
+        user.review_stage=10 and user.user_id=#{userId}) t1 on 1=1 left join
+        <!--一审完成切片总数-->
+        (select COUNT(DISTINCT image.id) as totalSubmit10 from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <if test="sourceHospitalIds !=null and sourceHospitalIds.size() > 0">
+            and image.hospital_id in
+            <foreach close=")" collection="sourceHospitalIds" item="listItem" open="(" separator=",">
+                #{listItem}
+            </foreach>
+        </if>
+        <if test="diseaseIdList!=null">
+            and disease_id in
+            <choose>
+                <when test="diseaseIdList.size()> 0">
+                    <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        and image.del_flag=0
+        where
+        <include refid="submitTime"/>
+        user.review_stage=10 and user.ownership=0 and user.user_id=#{userId})t2 on 1=1  left join
+        <!--一审未完成切片总数-->
+        (select COUNT(DISTINCT image.id) as totalUnSubmit10 from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <if test="sourceHospitalIds !=null and sourceHospitalIds.size() > 0">
+            and image.hospital_id in
+            <foreach close=")" collection="sourceHospitalIds" item="listItem" open="(" separator=",">
+                #{listItem}
+            </foreach>
+        </if>
+        <if test="diseaseIdList!=null">
+            and disease_id in
+            <choose>
+                <when test="diseaseIdList.size()> 0">
+                    <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        and image.del_flag=0
+        where
+        user.review_stage=10 and user.ownership=1 and user.user_id=#{userId})t3 on 1=1 left join
+        <!--二审分配切片总数-->
+        (select COUNT(DISTINCT image.id) as totalAllocated11 from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <if test="sourceHospitalIds !=null and sourceHospitalIds.size() > 0">
+            and image.hospital_id in
+            <foreach close=")" collection="sourceHospitalIds" item="listItem" open="(" separator=",">
+                #{listItem}
+            </foreach>
+        </if>
+        <if test="diseaseIdList!=null">
+            and disease_id in
+            <choose>
+                <when test="diseaseIdList.size()> 0">
+                    <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        and image.del_flag=0
+        where
+        <include refid="timeSelect"/>
+        user.review_stage=11 and user.user_id=#{userId})t4 on 1=1 left join
+        <!--二审完成切片总数-->
+        (select COUNT(DISTINCT image.id) as totalSubmit11 from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <if test="sourceHospitalIds !=null and sourceHospitalIds.size() > 0">
+            and image.hospital_id in
+            <foreach close=")" collection="sourceHospitalIds" item="listItem" open="(" separator=",">
+                #{listItem}
+            </foreach>
+        </if>
+        <if test="diseaseIdList!=null">
+            and disease_id in
+            <choose>
+                <when test="diseaseIdList.size()> 0">
+                    <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        and image.del_flag=0
+        where
+        <include refid="submitTime"/>
+        user.review_stage=11 and user.ownership=0 and user.user_id=#{userId})t5 on 1=1 left join
+        <!--二审未完成切片总数-->
+        (select COUNT(DISTINCT image.id) as totalUnSubmit11 from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <if test="sourceHospitalIds !=null and sourceHospitalIds.size() > 0">
+            and image.hospital_id in
+            <foreach close=")" collection="sourceHospitalIds" item="listItem" open="(" separator=",">
+                #{listItem}
+            </foreach>
+        </if>
+        <if test="diseaseIdList!=null">
+            and disease_id in
+            <choose>
+                <when test="diseaseIdList.size()> 0">
+                    <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        and image.del_flag=0
+        where
+        user.review_stage=11 and user.ownership=1 and user.user_id=#{userId})t6 on 1=1 left join
+        <!--昨天完成一审数-->
+        (select COUNT(DISTINCT image.id) as yesterdaySubmit10 from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <if test="sourceHospitalIds !=null and sourceHospitalIds.size() > 0">
+            and image.hospital_id in
+            <foreach close=")" collection="sourceHospitalIds" item="listItem" open="(" separator=",">
+                #{listItem}
+            </foreach>
+        </if>
+        <if test="diseaseIdList!=null">
+            and disease_id in
+            <choose>
+                <when test="diseaseIdList.size()> 0">
+                    <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        and image.del_flag=0
+        where
+        <include refid="submitTime"/>
+        user.review_stage=10 and user.ownership=0 and user.user_id=#{userId} and user.update_date BETWEEN   date_sub(DATE_FORMAT(NOW(),'%Y-%m-%d 17:00:00'),interval 1 day) and   date_sub(DATE_FORMAT(NOW(),'%Y-%m-%d 17:00:00'),interval 0 day) and user.update_by!='OverdueThread')t7 on 1=1 left join
+        <!--昨天完成二审数-->
+        (select COUNT(DISTINCT image.id) as yesterdaySubmit11 from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <if test="sourceHospitalIds !=null and sourceHospitalIds.size() > 0">
+            and image.hospital_id in
+            <foreach close=")" collection="sourceHospitalIds" item="listItem" open="(" separator=",">
+                #{listItem}
+            </foreach>
+        </if>
+        <if test="diseaseIdList!=null">
+            and disease_id in
+            <choose>
+                <when test="diseaseIdList.size()> 0">
+                    <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        and image.del_flag=0
+        where
+        <include refid="submitTime"/>
+        user.review_stage=11 and user.ownership=0 and user.user_id=#{userId} and user.update_date BETWEEN   date_sub(DATE_FORMAT(NOW(),'%Y-%m-%d 17:00:00'),interval 1 day) and   date_sub(DATE_FORMAT(NOW(),'%Y-%m-%d 17:00:00'),interval 0 day) and user.update_by!='OverdueThread')t8 on 1=1
+        )a1
+    </sql>
+
+    <!--医生数据统计-->
+    <select id="getStatisticsDoctor" resultType="com.thorough.core.modules.pathology.model.vo.StatisticsVo">
+        <choose>
+            <when test="userIdList != null and userIdList.size > 0">
+                select * from
+                <foreach close=")" collection="userIdList" item="userId" open="(" separator="  union all  " index="idx">
+                    <include refid="selectOneDoctor"/>
+                </foreach>
+                temp
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+    </select>
+
+
+    <!-- ##################################### -->
+
+
+
+    <!--统计所有专家或者顾问未分配总数 reviewStage=20表示统计专家，reviewStage=30表示统计顾问-->
+    <select id="getTotalNumberExpertOrAdvisorUnAllocating" resultType = "java.lang.Long">
+        select COUNT(*) from (
+        select DISTINCT image.id from pathology_image image inner join pathology_image_user user on image.id = user.image_id where
+        image.del_flag='0' and image.allocation=1 and image.review_stage = ${reviewStage}
+        <if test="diseaseIdList!=null">
+            and image.disease_id in
+            <choose>
+                <when test="diseaseIdList.size()> 0">
+                    <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        <!--不包含已经分配的专家切片-->
+        and not EXISTS (
+        SELECT user2.image_id FROM pathology_image_user user2 where user2.image_id = user.image_id and user2.review_stage = ${reviewStage}
+        )
+        union
+        <!--系统录入的专家切片-->
+        SELECT DISTINCT image.id from pathology_image image where image.del_flag='0' and image.allocation=0 and image.review_stage= ${reviewStage}
+        <if test="diseaseIdList!=null">
+            and image.disease_id in
+            <choose>
+                <when test="diseaseIdList.size()> 0">
+                    <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+                        #{listItem}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ('')
+                </otherwise>
+            </choose>
+        </if>
+        <!--不包含已经分配的专家切片-->
+        and not EXISTS (
+        SELECT user2.image_id FROM pathology_image_user user2 where user2.image_id = image.id and user2.review_stage= ${reviewStage}
+        )
+        ) t
+    </select>
+
+
+
+    <!-- ##################################### -->
+
+
+
+    <!--统计单个专家标注数据-->
+    <sql id="selectOneExpertOrAdvisor">
+        select (select name from sys_user where id=#{userId})as userName,#{userId} as userId,t9.*,t10.*,t11.* from
+        <!--专家分配总数-->
+        (select COUNT(DISTINCT image.id) as review20AllocatingTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        and image.del_flag=0
+        where
+        <include refid="timeSelect"/>
+        user.review_stage=${reviewStage} and user.user_id=#{userId} ) t9 left join
+        <!--专家完成总数 在submitTime时间段内-->
+        (select COUNT(DISTINCT image.id) as review20CompletedTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        and image.del_flag=0
+        where
+        <include refid="submitTime"/>
+        user.review_stage=${reviewStage} and user.ownership=0 and user.user_id=#{userId})t10 on 1=1
+
+        left join
+        <!--专家未完成总数-->
+        (select COUNT(DISTINCT image.id) as review20UnCompletedTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        and image.del_flag=0
+        where
+        user.review_stage=${reviewStage} and user.ownership=1 and user.user_id=#{userId})t11 on 1=1
+    </sql>
+    <!--统计多个专家标注数据-->
+    <select id="getStatisticsExpertOrAdvisor" resultType="com.thorough.core.modules.pathology.model.vo.StatisticsVo">
+        <choose>
+            <when test="userIds != null and userIds.size > 0">
+                select * from
+                <foreach close=")" collection="userIds" item="userId" open="(" separator="  union all  " index="idx">
+                    <include refid="selectOneExpertOrAdvisor"/>
+                </foreach>
+                temp
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+    </select>
+
+
+</mapper>

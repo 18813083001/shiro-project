@@ -1,0 +1,759 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thorough.core.modules.pathology.model.dao.StatisticsDao">
+
+
+    <sql id="selectOneDoctor">
+        select  (SELECT name from sys_user where id=#{userId}) as userName ,a1.* from
+        ( select *  from
+        (select COUNT(DISTINCT image.id) as review10AllocatingTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=10 and user.user_id=#{userId}) t1 left join
+        (select COUNT(DISTINCT image.id) as review10CompletedTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=10 and user.ownership=0 and user.user_id=#{userId})t2 on 1=1  left join
+        (select COUNT(DISTINCT image.id) as review10UnCompletedTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=10 and user.ownership=1 and user.user_id=#{userId})t3 on 1=1 left join
+        (select COUNT(DISTINCT image.id) as review11AllocatingTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=11 and user.user_id=#{userId})t4 on 1=1 left join
+        (select COUNT(DISTINCT image.id) as review11CompletedTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=11 and user.ownership=0 and user.user_id=#{userId})t5 on 1=1 left join
+        (select COUNT(DISTINCT image.id) as review11UnCompletedTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=11 and user.ownership=1 and user.user_id=#{userId})t6 on 1=1 left join
+        (select COUNT(DISTINCT image.id) as yesterday10CompletedTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=10 and user.ownership=0 and user.user_id=#{userId} and user.update_date BETWEEN   date_sub(DATE_FORMAT(NOW(),'%Y-%m-%d 17:00:00'),interval 1 day) and   date_sub(DATE_FORMAT(NOW(),'%Y-%m-%d 17:00:00'),interval 0 day) and user.update_by!='OverdueThread')t7 on 1=1 left join
+        (select COUNT(DISTINCT image.id) as yesterday11CompletedTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=11 and user.ownership=0 and user.user_id=#{userId} and user.update_date BETWEEN   date_sub(DATE_FORMAT(NOW(),'%Y-%m-%d 17:00:00'),interval 1 day) and   date_sub(DATE_FORMAT(NOW(),'%Y-%m-%d 17:00:00'),interval 0 day) and user.update_by!='OverdueThread')t8 on 1=1
+        )a1
+    </sql>
+
+    <sql id="selectAllDoctor">
+        select  ('合计') as userName ,a1.* from
+        ( select *  from
+        (select COUNT(DISTINCT image.id) as review10AllocatingTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="userIds != null and userIds.size > 0">
+                and user.user_id in
+                <foreach close=")" collection="userIds" item="userId" open="(" separator=",">
+                    #{userId}
+                </foreach>
+            </when>
+            <otherwise>
+                and user.user_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=10 ) t1 left join
+        (select COUNT(DISTINCT image.id) as review10CompletedTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="userIds != null and userIds.size > 0">
+                and user.user_id in
+                <foreach close=")" collection="userIds" item="userId" open="(" separator=",">
+                    #{userId}
+                </foreach>
+            </when>
+            <otherwise>
+                and user.user_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=10 and user.ownership=0 )t2 on 1=1  left join
+        (select COUNT(DISTINCT image.id) as review10UnCompletedTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="userIds != null and userIds.size > 0">
+                and user.user_id in
+                <foreach close=")" collection="userIds" item="userId" open="(" separator=",">
+                    #{userId}
+                </foreach>
+            </when>
+            <otherwise>
+                and user.user_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=10 and user.ownership=1 )t3 on 1=1 left join
+        (select COUNT(DISTINCT image.id) as review11AllocatingTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="userIds != null and userIds.size > 0">
+                and user.user_id in
+                <foreach close=")" collection="userIds" item="userId" open="(" separator=",">
+                    #{userId}
+                </foreach>
+            </when>
+            <otherwise>
+                and user.user_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=11 )t4 on 1=1 left join
+        (select COUNT(DISTINCT image.id) as review11CompletedTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="userIds != null and userIds.size > 0">
+                and user.user_id in
+                <foreach close=")" collection="userIds" item="userId" open="(" separator=",">
+                    #{userId}
+                </foreach>
+            </when>
+            <otherwise>
+                and user.user_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=11 and user.ownership=0 )t5 on 1=1 left join
+        (select COUNT(DISTINCT image.id) as review11UnCompletedTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="userIds != null and userIds.size > 0">
+                and user.user_id in
+                <foreach close=")" collection="userIds" item="userId" open="(" separator=",">
+                    #{userId}
+                </foreach>
+            </when>
+            <otherwise>
+                and user.user_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=11 and user.ownership=1 )t6 on 1=1 left join
+        (select COUNT(DISTINCT image.id) as yesterday10CompletedTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="userIds != null and userIds.size > 0">
+                and user.user_id in
+                <foreach close=")" collection="userIds" item="userId" open="(" separator=",">
+                    #{userId}
+                </foreach>
+            </when>
+            <otherwise>
+                and user.user_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=10 and user.ownership=0 and user.update_date BETWEEN   date_sub(DATE_FORMAT(NOW(),'%Y-%m-%d 17:00:00'),interval 1 day) and   date_sub(DATE_FORMAT(NOW(),'%Y-%m-%d 17:00:00'),interval 0 day) and user.update_by!='OverdueThread')t7 on 1=1 left join
+        (select COUNT(DISTINCT image.id) as yesterday11CompletedTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="userIds != null and userIds.size > 0">
+                and user.user_id in
+                <foreach close=")" collection="userIds" item="userId" open="(" separator=",">
+                    #{userId}
+                </foreach>
+            </when>
+            <otherwise>
+                and user.user_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=11 and user.ownership=0 and user.update_date BETWEEN   date_sub(DATE_FORMAT(NOW(),'%Y-%m-%d 17:00:00'),interval 1 day) and   date_sub(DATE_FORMAT(NOW(),'%Y-%m-%d 17:00:00'),interval 0 day) and user.update_by!='OverdueThread')t8 on 1=1
+        )a1
+    </sql>
+
+    <select id="getStatisticsDoctorLabel" resultType="com.thorough.core.modules.pathology.model.vo.StatisticsVo">
+        <choose>
+            <when test="userIds != null and userIds.size > 0">
+                select * from
+                <foreach close=")" collection="userIds" item="userId" open="(" separator="  union all  " index="idx">
+                    <include refid="selectOneDoctor"/>
+                    <if test="idx == userIds.size-1">
+                        union all <include refid="selectAllDoctor"/>
+                    </if>
+                </foreach>
+                temp
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+    </select>
+
+    <!--统计专家数据-->
+
+    <sql id="selectOneExpert">
+         select (select name from sys_user where id=#{userId})as userName,t9.*,t10.*,t11.* from
+        (select COUNT(DISTINCT image.id) as review20AllocatingTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+            <choose>
+                <when test="diseaseIds != null and diseaseIds.size > 0">
+                    and image.disease_id in
+                    <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                        #{diseaseId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    and image.disease_id in ('')
+                </otherwise>
+            </choose>
+            where user.review_stage=20 and user.user_id=#{userId} ) t9 left join
+        (select COUNT(DISTINCT image.id) as review20CompletedTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+            <choose>
+                <when test="diseaseIds != null and diseaseIds.size > 0">
+                    and image.disease_id in
+                    <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                        #{diseaseId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    and image.disease_id in ('')
+                </otherwise>
+            </choose>
+            where user.review_stage=20 and user.ownership=0 and user.user_id=#{userId})t10 on 1=1  left join
+        (select COUNT(DISTINCT image.id) as review20UnCompletedTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+            <choose>
+                <when test="diseaseIds != null and diseaseIds.size > 0">
+                    and image.disease_id in
+                    <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                        #{diseaseId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    and image.disease_id in ('')
+                </otherwise>
+            </choose>
+            where user.review_stage=20 and user.ownership=1 and user.user_id=#{userId})t11 on 1=1
+
+    </sql>
+
+    <sql id="selectAllExpert">
+         select ('合计') as userName,t9.*,t10.*,t11.* from
+        (select COUNT(DISTINCT image.id) as review20AllocatingTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="userIds != null and userIds.size > 0">
+                and user.user_id in
+                <foreach close=")" collection="userIds" item="userId" open="(" separator=",">
+                    #{userId}
+                </foreach>
+            </when>
+            <otherwise>
+                and user.user_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=20 ) t9 left join
+        (select COUNT(DISTINCT image.id) as review20CompletedTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="userIds != null and userIds.size > 0">
+                and user.user_id in
+                <foreach close=")" collection="userIds" item="userId" open="(" separator=",">
+                    #{userId}
+                </foreach>
+            </when>
+            <otherwise>
+                and user.user_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=20 and user.ownership=0 )t10 on 1=1  left join
+        (select COUNT(DISTINCT image.id) as review30UnCompletedTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="userIds != null and userIds.size > 0">
+                and user.user_id in
+                <foreach close=")" collection="userIds" item="userId" open="(" separator=",">
+                    #{userId}
+                </foreach>
+            </when>
+            <otherwise>
+                and user.user_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=20 and user.ownership=1 )t11 on 1=1
+
+    </sql>
+
+    <select id="getStatisticsExpertLabel" resultType="com.thorough.core.modules.pathology.model.vo.StatisticsVo">
+        <choose>
+            <when test="userIds != null and userIds.size > 0">
+                select * from
+                <foreach close=")" collection="userIds" item="userId" open="(" separator="  union all  " index="idx">
+                    <include refid="selectOneExpert"/>
+                    <if test="idx == userIds.size-1">
+                        union all <include refid="selectAllExpert"/>
+                    </if>
+                </foreach>
+                temp
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+    </select>
+
+    <!--统计顾问数据-->
+
+    <sql id="selectOneAdvisor">
+         select (select name from sys_user where id=#{userId})as userName,t9.*,t10.*,t11.* from
+        (select COUNT(DISTINCT image.id) as review30AllocatingTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=30 and user.user_id=#{userId} ) t9 left join
+        (select COUNT(DISTINCT image.id) as review30CompletedTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=30 and user.ownership=0 and user.user_id=#{userId})t10 on 1=1  left join
+        (select COUNT(DISTINCT image.id) as review30UnCompletedTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=30 and user.ownership=1 and user.user_id=#{userId})t11 on 1=1
+
+    </sql>
+
+    <sql id="selectAllAdvisor">
+         select ('合计') as userName,t9.*,t10.*,t11.* from
+        (select COUNT(DISTINCT image.id) as review30AllocatingTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="userIds != null and userIds.size > 0">
+                and user.user_id in
+                <foreach close=")" collection="userIds" item="userId" open="(" separator=",">
+                    #{userId}
+                </foreach>
+            </when>
+            <otherwise>
+                and user.user_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=30 ) t9 left join
+        (select COUNT(DISTINCT image.id) as review30CompletedTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="userIds != null and userIds.size > 0">
+                and user.user_id in
+                <foreach close=")" collection="userIds" item="userId" open="(" separator=",">
+                    #{userId}
+                </foreach>
+            </when>
+            <otherwise>
+                and user.user_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=30 and user.ownership=0 )t10 on 1=1  left join
+        (select COUNT(DISTINCT image.id) as review30UnCompletedTotal from pathology_image image inner join pathology_image_user user on image.id=user.image_id
+        <choose>
+            <when test="diseaseIds != null and diseaseIds.size > 0">
+                and image.disease_id in
+                <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </when>
+            <otherwise>
+                and image.disease_id in ('')
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="userIds != null and userIds.size > 0">
+                and user.user_id in
+                <foreach close=")" collection="userIds" item="userId" open="(" separator=",">
+                    #{userId}
+                </foreach>
+            </when>
+            <otherwise>
+                and user.user_id in ('')
+            </otherwise>
+        </choose>
+        where user.review_stage=30 and user.ownership=1 )t11 on 1=1
+
+    </sql>
+
+    <select id="getStatisticsAdvisorLabel" resultType="com.thorough.core.modules.pathology.model.vo.StatisticsVo">
+        <choose>
+            <when test="userIds != null and userIds.size > 0">
+                select * from
+                <foreach close=")" collection="userIds" item="userId" open="(" separator="  union all  " index="idx">
+                    <include refid="selectOneAdvisor"/>
+                    <if test="idx == userIds.size-1">
+                        union all <include refid="selectAllAdvisor"/>
+                    </if>
+                </foreach>
+                temp
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+    </select>
+
+    <!--统计医院-->
+
+    <sql id="statisticsHospital">
+        select * from(select (select name from sys_office where id =#{hospitalId}) as 医院,t.*,t2.* ,t3.*,t4.*,t5.*,t6.*,t7.*,t8.*,t9.*  from
+
+        (select COUNT(DISTINCT image.id) as 切片总数 from pathology_image image
+         where
+            <choose>
+                <when test="diseaseIds != null and diseaseIds.size > 0">
+                    image.disease_id in
+                    <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                        #{diseaseId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    image.disease_id in ('')
+                </otherwise>
+            </choose>
+            and hospital_id=#{hospitalId})t left join
+        (select COUNT(DISTINCT image.id) as 尚未分配的切片数 from pathology_image image
+         where
+            <choose>
+                <when test="diseaseIds != null and diseaseIds.size > 0">
+                    image.disease_id in
+                    <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                        #{diseaseId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    image.disease_id in ('')
+                </otherwise>
+            </choose>
+         and (allocation=0 or allocation=2) and hospital_id=#{hospitalId})t2 on 1=1 left join
+        (select COUNT(DISTINCT image.id) as 已经分配的切片数 from pathology_image image
+         where
+            <choose>
+                <when test="diseaseIds != null and diseaseIds.size > 0">
+                    image.disease_id in
+                    <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                        #{diseaseId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    image.disease_id in ('')
+                </otherwise>
+            </choose>
+         and allocation=1 and hospital_id=#{hospitalId}) t3 on 1=1 left join
+        (select COUNT(DISTINCT image.id) as 疑难切片数 from pathology_image image
+         where
+            <choose>
+                <when test="diseaseIds != null and diseaseIds.size > 0">
+                    image.disease_id in
+                    <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                        #{diseaseId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    image.disease_id in ('')
+                </otherwise>
+            </choose>
+         and difficult=1 and hospital_id=#{hospitalId}) t4 on 1=1 left join
+        (select COUNT(DISTINCT image.id) as 正在一审切片数 from pathology_image image
+         where
+            <choose>
+                <when test="diseaseIds != null and diseaseIds.size > 0">
+                    image.disease_id in
+                    <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                        #{diseaseId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    image.disease_id in ('')
+                </otherwise>
+            </choose>
+         and del_flag = 0 and allocation=1 and review_stage=10 and hospital_id=#{hospitalId}) t5 on 1=1 left join
+        (select COUNT(DISTINCT image.id) as 正在二审切片数 from pathology_image image
+         where
+            <choose>
+                <when test="diseaseIds != null and diseaseIds.size > 0">
+                    image.disease_id in
+                    <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                        #{diseaseId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    image.disease_id in ('')
+                </otherwise>
+            </choose>
+         and del_flag = 0 and allocation=1 and review_stage=11 and hospital_id=#{hospitalId})t6 on 1=1 left join
+        (select COUNT(DISTINCT image.id) as 通过一审和二审的切片数 from pathology_image image inner JOIN pathology_image_user user on user.image_id=image.id
+         where
+            <choose>
+                <when test="diseaseIds != null and diseaseIds.size > 0">
+                    image.disease_id in
+                    <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                        #{diseaseId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    image.disease_id in ('')
+                </otherwise>
+            </choose>
+         and  user.ownership=0 and user.review_stage=11 and hospital_id=#{hospitalId})t7 on 1=1 left join
+        (select COUNT(DISTINCT image.id) as 专家已审核 from pathology_image image inner JOIN pathology_image_user user on user.image_id=image.id
+         where
+            <choose>
+                <when test="diseaseIds != null and diseaseIds.size > 0">
+                    image.disease_id in
+                    <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                        #{diseaseId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    image.disease_id in ('')
+                </otherwise>
+            </choose>
+         and  user.ownership=0 and user.review_stage=20 and hospital_id=#{hospitalId})t8 on 1=1 left join
+        (select COUNT(DISTINCT image.id) as 专家分配总数 from pathology_image image inner JOIN pathology_image_user user on user.image_id=image.id
+        where
+            <choose>
+                <when test="diseaseIds != null and diseaseIds.size > 0">
+                    image.disease_id in
+                    <foreach close=")" collection="diseaseIds" item="diseaseId" open="(" separator=",">
+                        #{diseaseId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    image.disease_id in ('')
+                </otherwise>
+            </choose>
+        and user.review_stage=20 and hospital_id=#{hospitalId})t9 on 1=1
+        ) t
+    </sql>
+
+    <select id="getStatisticsHospital" resultType="com.thorough.core.modules.pathology.model.vo.StatisticsVo">
+        <choose>
+            <when test="hospitalIdList != null and hospitalIdList.size > 0">
+                select * from
+                <foreach close=")" collection="hospitalIdList" item="hospitalId" open="(" separator="  union all  " index="idx">
+                    <include refid="statisticsHospital"/>
+                </foreach>
+                temp
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>

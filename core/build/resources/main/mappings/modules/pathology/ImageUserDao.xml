@@ -1,0 +1,618 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thorough.core.modules.pathology.model.dao.ImageUserDao">
+
+
+  <sql id="imageUserJoins">
+    from pathology_image ig inner join pathology_image_user iu on ig.id = iu.image_id
+    where 1=1
+  </sql>
+
+  <sql id="column">
+    distinct ig.id,
+    ig.name,
+    ig.patient_id,
+    ig.disease_id,
+    ig.patient_name,
+    ig.path,
+    ig.describes,
+    ig.modify_number,
+    ig.hospital_id,
+    ig.label_status,
+    ig.review_stage,
+    ig.submit_date,
+    ig.create_by,
+    ig.create_date,
+    ig.update_by,
+    ig.update_date,
+    ig.remarks,
+    ig.type,
+    ig.ai_predict,
+    iu.ownership,
+    iu.user_id,
+    iu.favorites,
+    iu.review_stage as initialReviewStage,
+    iu.difficult as privateDifficult,
+    iu.difficult_describes,
+    iu.favorites_describes,
+    iu.rollback,
+    iu.rollback_describes as rollbackDescribes,
+    iu.create_date as iucDate,
+    iu.update_date as iuuDate,
+    iu.update_by as iuuBy
+  </sql>
+
+  <sql id="imageAllSql">
+    distinct ig.id,
+    ig.name,
+    ig.disease_id,
+    ig.path,
+    ig.describes,
+    ig.hospital_id,
+    ig.label_status,
+    ig.review_stage,
+    ig.create_by,
+    ig.create_date,
+    ig.remarks,
+    ig.ai_predict,
+    ig.allocation,
+    iu.ownership,
+    iu.user_id,
+    iu.review_stage as initialReviewStage
+  </sql>
+
+  <insert id="insertSelective" parameterType="com.thorough.core.modules.pathology.model.entity.ImageUser">
+    insert into pathology_image_user
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="imageId != null">
+        image_id,
+      </if>
+      <if test="userId != null">
+        user_id,
+      </if>
+      <if test="ownership != null">
+        ownership,
+      </if>
+      <if test="reviewStage != null">
+        review_stage,
+      </if>
+      <if test="favorites != null">
+        favorites,
+      </if>
+      <if test="difficult != null">
+        difficult,
+      </if>
+      <if test="difficultDescribes != null">
+        difficult_describes,
+      </if>
+      <if test="favoritesDescribes != null">
+        favorites_describes,
+      </if>
+      <if test="rollback != null">
+        rollback,
+      </if>
+      <if test="rollbackDescribes != null">
+        rollback_describes,
+      </if>
+      <if test="rollbackUser != null">
+        rollback_user,
+      </if>
+      <if test="createBy != null">
+        create_by,
+      </if>
+      <if test="createDate != null">
+        create_date,
+      </if>
+      <if test="updateBy != null">
+        update_by,
+      </if>
+      <if test="updateDate != null">
+        update_date,
+      </if>
+      <if test="delFlag != null">
+        del_flag,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="imageId != null">
+        #{imageId,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null">
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="ownership != null">
+        #{ownership,jdbcType=TINYINT},
+      </if>
+      <if test="reviewStage != null">
+        #{reviewStage,jdbcType=INTEGER},
+      </if>
+      <if test="favorites != null">
+        #{favorites,jdbcType=INTEGER},
+      </if>
+      <if test="difficult != null">
+        #{difficult,jdbcType=INTEGER},
+      </if>
+      <if test="difficultDescribes != null">
+        #{difficultDescribes,jdbcType=VARCHAR},
+      </if>
+      <if test="favoritesDescribes != null">
+        #{favoritesDescribes,jdbcType=VARCHAR},
+      </if>
+      <if test="rollback != null">
+        #{rollback,jdbcType=INTEGER},
+      </if>
+      <if test="rollbackDescribes != null">
+        #{rollbackDescribes,jdbcType=VARCHAR},
+      </if>
+      <if test="rollbackUser != null">
+        #{rollbackUser,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null">
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createDate != null">
+        #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateBy != null">
+        #{updateBy,jdbcType=VARCHAR},
+      </if>
+      <if test="updateDate != null">
+        #{updateDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="delFlag != null">
+        #{delFlag,jdbcType=CHAR},
+      </if>
+    </trim>
+  </insert>
+
+  <update id="updateByImageIdUserIdSelective" parameterType="com.thorough.core.modules.pathology.model.entity.ImageUser">
+    update pathology_image_user
+    <set>
+      <if test="imageId != null">
+        image_id = #{imageId,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null">
+        user_id = #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="ownership != null">
+        ownership = #{ownership,jdbcType=TINYINT},
+      </if>
+      <if test="reviewStage != null">
+        review_stage = #{reviewStage,jdbcType=INTEGER},
+      </if>
+      <if test="favorites != null">
+        favorites = #{favorites,jdbcType=INTEGER},
+      </if>
+      <if test="difficult != null">
+        difficult = #{difficult,jdbcType=INTEGER},
+      </if>
+      <if test="difficultDescribes != null">
+        difficult_describes = #{difficultDescribes,jdbcType=VARCHAR},
+      </if>
+      <if test="favoritesDescribes != null">
+        favorites_describes = #{favoritesDescribes,jdbcType=VARCHAR},
+      </if>
+      <if test="rollback != null">
+        rollback = #{rollback,jdbcType=INTEGER},
+      </if>
+      <if test="rollbackDescribes != null">
+        rollback_describes = #{rollbackDescribes,jdbcType=INTEGER},
+      </if>
+      <if test="rollbackUser != null">
+        rollback_user = #{rollbackUser,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null">
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createDate != null">
+        create_date = #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateBy != null">
+        update_by = #{updateBy,jdbcType=VARCHAR},
+      </if>
+      <if test="updateDate != null">
+        update_date = #{updateDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="delFlag != null">
+        del_flag = #{delFlag,jdbcType=CHAR},
+      </if>
+    </set>
+    where image_id = #{imageId,jdbcType=VARCHAR} and user_id = #{userId,jdbcType=VARCHAR}
+  </update>
+
+  <select id="getImagesByUser" resultType="com.thorough.core.modules.pathology.model.entity.Image" parameterType="com.thorough.core.modules.pathology.model.entity.Image">
+    SELECT distinct
+    <include refid="column"/>
+    <include refid="imageUserJoins"/>
+
+    <if test="id!=null and id!=''">
+      and ig.id = #{id}
+    </if>
+    <if test="name!=null and name!=''">
+      and ig.name like '%${name}%'
+    </if>
+    <if test="sourceHospitalIds !=null and sourceHospitalIds.size() > 0">
+      and ig.hospital_id in
+      <foreach close=")" collection="sourceHospitalIds" item="listItem" open="(" separator=",">
+        #{listItem}
+      </foreach>
+    </if>
+    <if test="remarks!=null and remarks!=''">
+      and ig.remarks like '%${remarks}%'
+    </if>
+    <if test="medicalRecordNumber!=null and medicalRecordNumber!=''">
+      and ig.medical_record_number like '%${medicalRecordNumber}%'
+    </if>
+    <if test="labelStatus!=null">
+      and
+      <choose>
+        <when test="labelStatusRollback != null">
+          (ig.label_status = ${labelStatus} or ig.label_status = ${labelStatusRollback})
+        </when>
+        <otherwise>
+          ig.label_status = ${labelStatus}
+        </otherwise>
+      </choose>
+    </if>
+    <if test="reviewStage!=null">
+      and ig.review_stage = ${reviewStage}
+    </if>
+    <if test="createDate!=null and createEndDate!=null">
+      and ig.create_date between #{createDate} and #{createEndDate}
+    </if>
+    <if test="submitDate!=null and submitEndDate!=null">
+      and ig.submit_date between #{submitDate} and #{submitEndDate}
+    </if>
+    <if test="updateDate!=null and updateEndDate!=null">
+      and ig.update_date between #{updateDate} and #{updateEndDate}
+    </if>
+    <if test="hospitalId!=null and hospitalId!=''">
+      and ig.hospital_id = #{hospitalId}
+    </if>
+    <if test="departmentId!=null and departmentId!=''">
+      and ig.department_id = #{departmentId}
+    </if>
+    <if test="ownership!=null">
+      and iu.ownership = #{ownership}
+    </if>
+    <if test="favorites!=null">
+      and iu.favorites = #{favorites}
+    </if>
+    <if test="privateDifficult!=null">
+      and iu.difficult = #{privateDifficult}
+    </if>
+    <if test="initialReviewStage!=null">
+      and iu.review_stage = #{initialReviewStage}
+    </if>
+    <if test="userIdList!=null">
+      and iu.user_id in
+      <choose>
+        <when test="userIdList.size()> 0">
+          <foreach close=")" collection="userIdList" item="listItem" open="(" separator=",">
+            #{listItem}
+          </foreach>
+        </when>
+        <otherwise>
+          ('')
+        </otherwise>
+      </choose>
+    </if>
+    <if test="userId!=null and userId!=''">
+      and iu.user_id = #{userId}
+    </if>
+    <if test="type!=null">
+      and ig.type = ${type}
+    </if>
+    <if test="delFlag!=null">
+      and ig.del_flag = ${delFlag}
+    </if>
+    <if test="imageUserDelFlag!=null">
+      and iu.del_flag = ${imageUserDelFlag}
+    </if>
+    <if test="diseaseIdList!=null">
+      and ig.disease_id in
+      <choose>
+        <when test="diseaseIdList.size()> 0">
+          <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+            #{listItem}
+          </foreach>
+        </when>
+        <otherwise>
+          ('')
+        </otherwise>
+      </choose>
+    </if>
+    <choose>
+      <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+        ORDER BY ${page.orderBy}
+      </when>
+    </choose>
+  </select>
+
+  <select id="getCountByUser" resultType="java.lang.Long" parameterType="com.thorough.core.modules.pathology.model.entity.Image">
+    SELECT count(DISTINCT ig.id)
+    <include refid="imageUserJoins"/>
+    <if test="id!=null and id!=''">
+      and ig.id = #{id}
+    </if>
+    <if test="name!=null and name!=''">
+      and ig.name like '%${name}%'
+    </if>
+    <if test="labelStatus!=null">
+      and ig.label_status = ${labelStatus}
+    </if>
+    <if test="reviewStage!=null">
+      and ig.review_stage = ${reviewStage}
+    </if>
+    <if test="createDate!=null and createEndDate!=null">
+      and ig.create_date between #{createDate} and #{createEndDate}
+    </if>
+    <if test="submitDate!=null and submitEndDate!=null">
+      and ig.submit_date between #{submitDate} and #{submitEndDate}
+    </if>
+    <if test="updateDate!=null and updateEndDate!=null">
+      and ig.update_date between #{updateDate} and #{updateEndDate}
+    </if>
+    <if test="hospitalId!=null and hospitalId!=''">
+      and ig.hospital_id = #{hospitalId}
+    </if>
+    <if test="departmentId!=null and departmentId!=''">
+      and ig.department_id = #{departmentId}
+    </if>
+    <if test="imageUserUpdateStartDate!=null and imageUserUpdateEndDate!=null">
+      and iu.update_date between #{imageUserUpdateStartDate} and #{imageUserUpdateEndDate}
+    </if>
+    <if test="ownership!=null">
+      and iu.ownership = #{ownership}
+    </if>
+    <if test="favorites!=null">
+      and iu.favorites = #{favorites}
+    </if>
+    <if test="privateDifficult!=null">
+      and iu.difficult = #{privateDifficult}
+    </if>
+    <if test="initialReviewStage!=null">
+      and iu.review_stage = #{initialReviewStage}
+    </if>
+    <if test="userIdList!=null">
+      and iu.user_id in
+      <choose>
+        <when test="userIdList.size()> 0">
+          <foreach close=")" collection="userIdList" item="listItem" open="(" separator=",">
+            #{listItem}
+          </foreach>
+        </when>
+        <otherwise>
+          ('')
+        </otherwise>
+      </choose>
+    </if>
+    <if test="userId!=null and userId!=''">
+      and iu.user_id = #{userId}
+    </if>
+    <if test="type!=null">
+      and ig.type = ${type}
+    </if>
+    <if test="delFlag!=null">
+      and ig.del_flag = ${delFlag}
+    </if>
+    <if test="imageUserDelFlag!=null">
+      and iu.del_flag = ${imageUserDelFlag}
+    </if>
+    <if test="diseaseIdList!=null">
+      and ig.disease_id in
+      <choose>
+        <when test="diseaseIdList.size()> 0">
+          <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+            #{listItem}
+          </foreach>
+        </when>
+        <otherwise>
+          ('')
+        </otherwise>
+      </choose>
+    </if>
+  </select>
+
+  <select id="count" resultType="java.lang.Long">
+    select count(*) from pathology_image_user where del_flag='0'
+    <if test="imageId!=null">
+      and image_id=#{imageId}
+    </if>
+    <if test="userId!=null">
+      and user_id=#{userId}
+    </if>
+    <if test="ownership!=null">
+      and ownership=${ownership}
+    </if>
+  </select>
+
+  <update id="updateOwnership" parameterType="map">
+    update pathology_image_user set ownership = ${ownership} where user_id = #{userId}
+    and image_id=${imageId}
+    and del_flag='0'
+  </update>
+
+  <select id="getUserIdByImageId" resultType="java.lang.String">
+    select user_id from pathology_image_user where image_id=#{imageId}
+  </select>
+
+  <select id="getOwnership" resultType="java.lang.Integer">
+    select ownership from pathology_image_user where image_id=#{imageId} and user_id=#{userId} and del_flag='0'
+  </select>
+
+  <select id="getUserIdByImageIdAndReviewStage" resultType="java.lang.String">
+    select user_id from pathology_image_user where image_id=#{imageId} and review_stage=${reviewStage}
+  </select>
+  <select id="getReviewStageByImageIdAndUserId" resultType="java.lang.Integer">
+    select review_stage from pathology_image_user where image_id=#{imageId} and user_id=#{userId}
+  </select>
+
+  <select id="getMaxImageId" resultType="java.lang.Integer">
+    SELECT MAX(CAST(id AS SIGNED)) from pathology_image
+  </select>
+
+  <delete id="deleteByImageIdAndUserId" >
+    delete from pathology_image_user
+    where image_id=#{imageId} and user_id=#{userId}
+  </delete>
+
+  <select id="getCountByImageIdAndUserIdAndReviewStage" resultType="java.lang.Long">
+    select count(*) from pathology_image_user where image_id=#{imageId} and user_id=#{userId} and review_stage = ${reviewStage}
+  </select>
+
+  <select id="getCountByImageIdAndReviewStageAndOwnership" resultType="java.lang.Long">
+    select count(*) from pathology_image_user where image_id=#{imageId} and ownership=#{ownership} and review_stage = ${reviewStage}
+  </select>
+
+  <sql id="timeSelect">
+    <choose>
+      <when test="createDate!=null and createEndDate!=null">
+        and ig.create_date between #{createDate} and #{createEndDate}
+      </when>
+      <otherwise>
+        <if test="createDate!=null">
+          and ig.create_date <![CDATA[ >= ]]> #{createDate}
+        </if>
+        <if test="createEndDate!=null">
+          and ig.create_date <![CDATA[ <= ]]> #{createEndDate}
+        </if>
+      </otherwise>
+    </choose>
+  </sql>
+
+  <!--只统计二审已经提交且没有分配给userId的数据  EXISTS语句表示 #没有分配过给某专家或者顾问 -->
+  <select id="imageListToExpertAdvisor" resultType="com.thorough.core.modules.pathology.model.entity.Image" parameterType="com.thorough.core.modules.pathology.model.entity.Image">
+    select
+    <include refid="column"/>
+    from pathology_image ig inner join pathology_image_user iu on iu.image_id = ig.id
+    and iu.review_stage = 11 and iu.ownership = 0 and ig.del_flag = 0 and ig.difficult=0
+    <if test="diseaseIdList!=null">
+      and ig.disease_id in
+      <choose>
+        <when test="diseaseIdList.size()> 0">
+          <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+            #{listItem}
+          </foreach>
+        </when>
+        <otherwise>
+          ('')
+        </otherwise>
+      </choose>
+    </if>
+    <if test="sourceHospitalIds !=null and sourceHospitalIds.size() > 0">
+      and ig.hospital_id in
+      <foreach close=")" collection="sourceHospitalIds" item="listItem" open="(" separator=",">
+        #{listItem}
+      </foreach>
+    </if>
+    <if test="userId != null and userId != ''">
+      and iu.user_id = #{userId}
+    </if>
+    <if test="userIdList!=null">
+      and iu.user_id in
+      <choose>
+        <when test="userIdList.size()> 0">
+          <foreach close=")" collection="userIdList" item="listItem" open="(" separator=",">
+            #{listItem}
+          </foreach>
+        </when>
+        <otherwise>
+          ('')
+        </otherwise>
+      </choose>
+    </if>
+    <if test="name!=null and name!=''">
+      and ig.name like '%${name}%'
+    </if>
+    <if test="remarks!=null and remarks!=''">
+      and ig.remarks like '%${remarks}%'
+    </if>
+    <if test="medicalRecordNumber!=null and medicalRecordNumber!=''">
+      and ig.medical_record_number like '%${medicalRecordNumber}%'
+    </if>
+    <include refid="timeSelect"/>
+    <if test="excludeUserId != null and excludeUserId != ''">
+      and not EXISTS(
+      select iuser.image_id from pathology_image_user iuser where iuser.image_id = iu.image_id and iuser.user_id = #{excludeUserId}
+      )
+    </if>
+  </select>
+
+  <select id="imageAll" resultType="com.thorough.core.modules.pathology.model.entity.Image" parameterType="com.thorough.core.modules.pathology.model.entity.Image">
+    select
+    <include refid="imageAllSql"/>
+    from pathology_image ig inner join pathology_image_user iu on iu.image_id = ig.id
+    where ig.del_flag='0' and ig.difficult=0
+    <if test="diseaseIdList!=null">
+      and ig.disease_id in
+      <choose>
+        <when test="diseaseIdList.size()> 0">
+          <foreach close=")" collection="diseaseIdList" item="listItem" open="(" separator=",">
+            #{listItem}
+          </foreach>
+        </when>
+        <otherwise>
+          ('')
+        </otherwise>
+      </choose>
+    </if>
+    <if test="sourceHospitalIds !=null and sourceHospitalIds.size() > 0">
+      and ig.hospital_id in
+      <foreach close=")" collection="sourceHospitalIds" item="listItem" open="(" separator=",">
+        #{listItem}
+      </foreach>
+    </if>
+    <if test="userId != null and userId != ''">
+      and iu.user_id = #{userId}
+    </if>
+    <if test="userIdList!=null">
+      and iu.user_id in
+      <choose>
+        <when test="userIdList.size()> 0">
+          <foreach close=")" collection="userIdList" item="listItem" open="(" separator=",">
+            #{listItem}
+          </foreach>
+        </when>
+        <otherwise>
+          ('')
+        </otherwise>
+      </choose>
+    </if>
+    <if test="name!=null and name!=''">
+      and ig.name like '%${name}%'
+    </if>
+    <if test="remarks!=null and remarks!=''">
+      and ig.remarks like '%${remarks}%'
+    </if>
+    <if test="medicalRecordNumber!=null and medicalRecordNumber!=''">
+      and ig.medical_record_number like '%${medicalRecordNumber}%'
+    </if>
+    <if test="labelStatus!=null">
+      and
+      <choose>
+        <when test="labelStatusRollback != null">
+          (ig.label_status = ${labelStatus} or ig.label_status = ${labelStatusRollback})
+        </when>
+        <otherwise>
+          ig.label_status = ${labelStatus}
+        </otherwise>
+      </choose>
+    </if>
+    <if test="reviewStage!=null">
+      and ig.review_stage = ${reviewStage}
+    </if>
+    <if test="ownership!=null">
+      and iu.ownership = #{ownership}
+    </if>
+    <if test="initialReviewStage!=null">
+      and iu.review_stage = #{initialReviewStage}
+    </if>
+    <if test="imageUserDelFlag!=null">
+      and iu.del_flag = ${imageUserDelFlag}
+    </if>
+    <include refid="timeSelect"/>
+
+  </select>
+
+</mapper>
