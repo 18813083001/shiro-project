@@ -1,0 +1,8 @@
+.idea
+.gradle
+*.class
+build/*
+logs/*
+*/build/*
+insights-server.iml
+.DS_Store

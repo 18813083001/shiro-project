@@ -1,6 +1,4 @@
 rootProject.name = 'multi-project-gradle'
 include 'library'
-include 'insights'
-include 'path'
 include 'core'
 
